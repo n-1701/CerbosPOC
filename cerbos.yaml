@@ -1,0 +1,12 @@
+server:
+  httpListenAddr: ":3592"
+  grpcListenAddr: ":3593"
+
+storage:
+  driver: "disk"
+  disk:
+    directory: "./policies"
+    watchForChanges: true  # edit a YAML file, change takes effect immediately — no restart
+
+# Future Docker:  docker run -v $(pwd)/policies:/policies -p 3592:3592 -p 3593:3593 ghcr.io/cerbos/cerbos:latest server
+# Future K8s Hub: change driver to "bundle", point at Cerbos Hub — .NET code unchanged

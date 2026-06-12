@@ -1,0 +1,47 @@
+---
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  resource: "order"
+  version: "default"
+  importDerivedRoles:
+    - common_roles
+  rules:
+
+    # Any authenticated user can create
+    - actions: ["create"]
+      effect: EFFECT_ALLOW
+      roles: ["user", "manager", "admin"]
+
+    # Owner can view their own order; dept manager can view orders in their dept; admin sees all
+    - actions: ["view"]
+      effect: EFFECT_ALLOW
+      derivedRoles: ["owner", "dept_manager"]
+
+    - actions: ["view"]
+      effect: EFFECT_ALLOW
+      roles: ["admin"]
+
+    # Owner can edit, but only while the order is still in "draft"
+    - actions: ["edit"]
+      effect: EFFECT_ALLOW
+      derivedRoles: ["owner"]
+      condition:
+        match:
+          expr: "resource.attr.status == 'draft'"
+
+    # Owner can cancel if not yet shipped
+    - actions: ["cancel"]
+      effect: EFFECT_ALLOW
+      derivedRoles: ["owner"]
+      condition:
+        match:
+          expr: "resource.attr.status in ['draft', 'pending']"
+
+    # Only dept manager or admin can approve
+    - actions: ["approve"]
+      effect: EFFECT_ALLOW
+      derivedRoles: ["dept_manager"]
+
+    - actions: ["approve"]
+      effect: EFFECT_ALLOW
+      roles: ["admin"]
